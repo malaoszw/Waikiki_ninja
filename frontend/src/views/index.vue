@@ -18,18 +18,19 @@
 
     <div class="card">
       <div class="card-header">
-          <p class="text-2xl font-bold">WSCK 录入</p>
-            <div class="card-body text-base leading-6">
-              <b>wskey有效期长达一年，请联系管理员确认使用，慎重！</b>
-              <p>删WSCK在下方。</p>
-              <b>也可以保持pin不变，随意更改wskey，等同于删除WSCK。改密码解决一切CK泄露问题。</b>
-              <p>用户须手动提取pin和wskey，格式如："pin=xxxxxx;wskey=xxxxxxxxxx;"。</p>
-              <p class="card-subtitle">——IOS用户手机抓包APP&emsp;<a style="" href="https://apps.apple.com/cn/app/stream/id1312141691" target="_blank" id="downiOSApp">点击跳转安装</a> </p>
-              <p class="card-subtitle">——在api.m.jd.com域名下找POST请求大概率能找到wskey。</p>
-              <p class="card-subtitle">wskey在录入后立马上线，系统会在指定时间检查wskey，有效则自动转换出cookie登录</p>
-              <p class="card-subtitle">cookie失效后，也会在系统设定的指定时间内自动转换出新的cookie，实现一次录入长期有效</p>
-              <b>wskey会随着京东app的退出登录和更改密码而失效，清楚app数据或者卸载软件不会影响。</b>
-            </div>
+        <p class="text-2xl font-bold">WSCK 录入</p>
+        <div class="card-body text-base leading-6">
+          <b>wskey有效期长达一年，请联系管理员确认使用，慎重！</b>
+          <p>删WSCK在下方。</p>
+          <b>也可以保持pin不变，随意更改wskey，等同于删除WSCK。改密码解决一切CK泄露问题。</b>
+          <p>用户须手动提取pin和wskey，格式如："pin=xxxxxx;wskey=xxxxxxxxxx;"。</p>
+          <p class="card-subtitle">——IOS用户手机抓包APP&emsp;<a style="" href="https://apps.apple.com/cn/app/stream/id1312141691" target="_blank"
+              id="downiOSApp">点击跳转安装</a> </p>
+          <p class="card-subtitle">——在api.m.jd.com域名下找POST请求大概率能找到wskey。</p>
+          <p class="card-subtitle">wskey在录入后立马上线，系统会在指定时间检查wskey，有效则自动转换出cookie登录</p>
+          <p class="card-subtitle">cookie失效后，也会在系统设定的指定时间内自动转换出新的cookie，实现一次录入长期有效</p>
+          <b>wskey会随着京东app的退出登录和更改密码而失效，清楚app数据或者卸载软件不会影响。</b>
+        </div>
       </div>
       <div class="card-body text-center">
         <el-input v-model="jdwsck" placeholder="pin=xxxxxx;wskey=xxxxxxxxxx;" size="small" clearable class="my-4 w-full" />
@@ -45,7 +46,7 @@
         <p class="text-2xl font-bold">修改备注（CK和WSCK同步）</p>
       </div>
       <div class="card-body text-center">
-        <el-input v-model="remark" size="small" placeholder="{{ remark }}"  clearable class="my-4 w-full" />
+        <el-input v-model="remark" size="small" placeholder="{{ remark }}" clearable class="my-4 w-full" />
       </div>
       <div class="card-footer">
         <el-button type="success" size="small" auto @click="changeremark">修改</el-button>
@@ -59,20 +60,10 @@
       </div>
       <div class="card-body">
         <ul>
-          <li
-            v-for="(item, index) in activity"
-            :key="index"
-            class="leading-normal"
-          >
+          <li v-for="(item, index) in activity" :key="index" class="leading-normal">
             <span>{{ item.name }}：</span>
             <span class="pr-2">{{ item.address }}</span>
-            <a
-              v-if="item.href"
-              class="text-blue-400"
-              href="#"
-              @click="openUrlWithJD(item.href)"
-              >直达链接</a
-            >
+            <a v-if="item.href" class="text-blue-400" href="#" @click="openUrlWithJD(item.href)">直达链接</a>
           </li>
         </ul>
       </div>
@@ -81,7 +72,7 @@
 </template>
 
 <script>
-import { getUserInfoAPI, enableCKAPI,disableCKAPI,delAccountAPI, remarkupdateAPI, WSCKLoginAPI, WSCKDelaccountAPI, remarkupdateWSCKAPI } from '@/api/index'
+import { getUserInfoAPI, enableCKAPI, disableCKAPI, delAccountAPI, remarkupdateAPI, WSCKLoginAPI, WSCKDelaccountAPI, getWSCKUserinfoAPI, remarkupdateWSCKAPI } from '@/api/index'
 import { onMounted, reactive, toRefs } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -100,6 +91,7 @@ export default {
     const getInfo = async () => {
       const eid = localStorage.getItem('eid')
       const wseid = localStorage.getItem('wseid')
+      // console.log("缓存：eid：" + eid + "wseid" + wseid)
       if (!eid && !wseid) {
         logout()
         return
@@ -111,13 +103,15 @@ export default {
           logout()
           return
         }
+        // console.log("ck用户信息:" + JSON.stringify(userInfo))
         data.nickName = userInfo.data.nickName
-        data.remark =userInfo.data.remark
+        data.remark = userInfo.data.remark
         data.timestamp = new Date(userInfo.data.timestamp).toLocaleString()
       }
 
       if (wseid) {
         const userInfo = await getWSCKUserinfoAPI(wseid)
+        // console.log("wsck用户信息:" + JSON.stringify(userInfo))
         if (!userInfo) {
           ElMessage.error('获取用户WSCK信息失败，请重重新登录')
           logout()
@@ -152,7 +146,7 @@ export default {
 
     const disableCK = async () => {
       const eid = localStorage.getItem('eid')
-      const body = await disableCKAPI({eid})
+      const body = await disableCKAPI({ eid })
       if (body.code !== 200) {
         ElMessage.error(body.message)
       } else {
@@ -166,7 +160,7 @@ export default {
 
     const enableCK = async () => {
       const eid = localStorage.getItem('eid')
-      const body = await enableCKAPI({eid})
+      const body = await enableCKAPI({ eid })
       if (body.code !== 200) {
         ElMessage.success(body.message)
       } else {
@@ -317,15 +311,15 @@ export default {
 
 <style scoped>
 /*没被访问过之前*/
- a:link{
-            color: #B321FF;
-        }
-        /*默认*/
- a{
-            color: #EECDFF;
-        }
-        /*鼠标掠过*/
- a:hover{
-            color: red;
-        }
+a:link {
+  color: #b321ff;
+}
+/*默认*/
+a {
+  color: #eecdff;
+}
+/*鼠标掠过*/
+a:hover {
+  color: red;
+}
 </style>

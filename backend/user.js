@@ -23,11 +23,11 @@ const {
 const path = require('path');
 const qlDir = process.env.QL_DIR || '/ql/data';
 const notifyFile = path.join(qlDir, 'data/shell/notify.sh');
-const {exec} = require('child_process');
-const {GET_RANDOM_TIME_UA} = require('./utils/USER_AGENT');
+const { exec } = require('child_process');
+const { GET_RANDOM_TIME_UA } = require('./utils/USER_AGENT');
 
 const api = got.extend({
-    retry: {limit: 0},
+    retry: { limit: 0 },
     responseType: 'json',
 });
 
@@ -54,21 +54,21 @@ module.exports = class User {
 
     // 新增wskey构造入参
     constructor({
-                    token,
-                    okl_token,
-                    cookies,
-                    pt_key,
-                    pt_pin,
-                    cookie,
-                    eid,
-                    wseid,
-                    remarks,
-                    remark,
-                    ua,
-                    pin,
-                    wskey,
-                    jdwsck
-                }) {
+        token,
+        okl_token,
+        cookies,
+        pt_key,
+        pt_pin,
+        cookie,
+        eid,
+        wseid,
+        remarks,
+        remark,
+        ua,
+        pin,
+        wskey,
+        jdwsck
+    }) {
         this.token = token;
         this.okl_token = okl_token;
         this.cookies = cookies;
@@ -92,7 +92,7 @@ module.exports = class User {
         if (remarks) {
             this.remark = remarks.match(/remark=(.*?);/) && remarks.match(/remark=(.*?);/)[1];
         }
-/////////////////////////////////////////////////
+        /////////////////////////////////////////////////
         // 新增pin
         this.pin = pin;
         // 新增wskey
@@ -113,7 +113,7 @@ module.exports = class User {
         if (this.jdwsck && this.nickName === null || this.nickName === '') {
             this.nickName = this.pin;
         }
-/////////////////////////////////////////////////
+        /////////////////////////////////////////////////
     }
 
     async getQRConfig() {
@@ -141,9 +141,8 @@ module.exports = class User {
 
         const nowTime = Date.now();
         // eslint-disable-next-line prettier/prettier
-        const taskPostUrl = `https://plogin.m.jd.com/cgi-bin/m/tmauthreflogurl?s_token=${
-            this.#s_token
-        }&v=${nowTime}&remember=true`;
+        const taskPostUrl = `https://plogin.m.jd.com/cgi-bin/m/tmauthreflogurl?s_token=${this.#s_token
+            }&v=${nowTime}&remember=true`;
 
         const configRes = await api({
             method: 'post',
@@ -179,44 +178,6 @@ module.exports = class User {
                 message: '扫码登录已关闭，请自行抓包手动CK登录',
             };
         }
-        if (!this.token || !this.okl_token || !this.cookies) {
-            throw new Error('初始化登录请求失败！');
-        }
-        const nowTime = Date.now();
-        const loginUrl = `https://plogin.m.jd.com/login/login?appid=300&returnurl=https://wqlogin2.jd.com/passport/LoginRedirect?state=${nowTime}&returnurl=//home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&/myJd/home.action&source=wq_passport`;
-        const getUserCookieUrl = `https://plogin.m.jd.com/cgi-bin/m/tmauthchecktoken?&token=${this.token}&ou_state=0&okl_token=${this.okl_token}`;
-        const response = await api({
-            method: 'POST',
-            url: getUserCookieUrl,
-            body: `lang=chs&appid=300&source=wq_passport&returnurl=https://wqlogin2.jd.com/passport/LoginRedirect?state=${nowTime}&returnurl=//home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&/myJd/home.action`,
-            headers: {
-                Connection: 'Keep-Alive',
-                'Content-Type': 'application/x-www-form-urlencoded; Charset=UTF-8',
-                Accept: 'application/json, text/plain, */*',
-                'Accept-Language': 'zh-cn',
-                Referer: loginUrl,
-                'User-Agent': this.ua,
-                Cookie: this.cookies,
-            },
-        });
-        const data = response.body;
-        const headers = response.headers;
-        if (data.errcode === 0) {
-            const pt_key = headers['set-cookie'][1];
-            this.pt_key = pt_key.substring(pt_key.indexOf('=') + 1, pt_key.indexOf(';'));
-            const pt_pin = headers['set-cookie'][2];
-            this.pt_pin = pt_pin.substring(pt_pin.indexOf('=') + 1, pt_pin.indexOf(';'));
-            this.cookie = 'pt_key=' + this.pt_key + ';pt_pin=' + this.pt_pin + ';';
-
-            const result = await this.CKLogin();
-            result.errcode = 0;
-            return result;
-        }
-
-        return {
-            errcode: data.errcode,
-            message: data.message,
-        };
     }
 
     async CKLogin() {
@@ -342,11 +303,13 @@ module.exports = class User {
         };
     }
 
-/////////////////////////////////////////////////
+    /////////////////////////////////////////////////
     // 新增同步方法
     async WSCKLogin() {
+        console.log("开始录入WSCK");
         let message;
         await this.#getWSCKCheck();
+        console.log("校验成功");
         const envs = await getWSCKEnvs();// 1
         const poolInfo = await User.getPoolInfo();
         const env = await envs.find((item) => item.value.match(/pin=(.*?);/)[1] === this.pin);
@@ -391,7 +354,8 @@ module.exports = class User {
     //不查nickname了，用remark代替
     async getWSCKUserInfoByEid() {
         const envs = await getWSCKEnvs();
-        const env = await envs.find((item) => item.id === this.wseid);
+        const env = await envs.find((item) => item.id == this.wseid);
+        //console.log("env:" + JSON.stringify(env) + ",wseid:" + this.wseid)
         if (!env) {
             throw new UserError('没有找到这个账户，重新登录试试看哦', 230, 200);
         }
@@ -401,7 +365,9 @@ module.exports = class User {
         if (remarks) {
             this.remark = remarks.match(/remark=(.*?);/) && remarks.match(/remark=(.*?);/)[1];
         }
+        this.remark=remarks
         // await this.#getNickname();
+        console.log("用户信息:" + this.remark)
         return {
             nickName: this.remark,
             wseid: this.wseid,
@@ -416,7 +382,7 @@ module.exports = class User {
         }
 
         const envs = await getWSCKEnvs();
-        const env = await envs.find((item) => item.id === this.wseid);
+        const env = await envs.find((item) => item.id == this.wseid);
         if (!env) {
             throw new UserError('没有找到这个wskey账户，重新登录试试看哦', 230, 200);
         }
@@ -446,7 +412,7 @@ module.exports = class User {
         };
     }
 
-/////////////////////////////////////////////////
+    /////////////////////////////////////////////////
 
     static async getPoolInfo() {
         const count = await getEnvsCount();
@@ -467,7 +433,7 @@ module.exports = class User {
     static async getUsers() {
         const envs = await getEnvs();
         const result = envs.map(async (env) => {
-            const user = new User({cookie: env.value, remarks: env.remarks});
+            const user = new User({ cookie: env.value, remarks: env.remarks });
             await user.#getNickname(true);
             return {
                 pt_pin: user.pt_pin,
@@ -554,30 +520,38 @@ module.exports = class User {
         });
     }
 
-//////////////////////////////////////////////
+    //////////////////////////////////////////////
     async #getWSCKCheck() {
-        const s = await api({url: `https://pan.smxy.xyz/sign`}).json();
-        const clientVersion = s['clientVersion']
-        const client = s['client']
-        const sv = s['sv']
-        const st = s['st']
-        const uuid = s['uuid']
-        const sign = s['sign']
-        if (!sv || !st || !uuid || !sign) {
-            throw new UserError('获取签名失败，请等待Ninja修理 ！', 200, 200);
+        // console.log("开始校验")
+        // var url_list = ['aHR0cDovL2FwaS5tb21vZS5tbC8=', 'aHR0cHM6Ly9hcGkubW9tb2UubWwv',
+        //     'aHR0cHM6Ly9hcGkuaWxpeWEuY2Yv'];
+        // url_list.forEach(item => {
+        //     let url = Buffer.from(item, 'base64').toString('utf8')
+        //     console.log(url)
+        // });
+        const ua = 'jdapp;android;11.0.2;;;appBuild/97565;ef/1;ep/{"hdid":"JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw=","ts":1658974547865,"ridx":-1,"cipher":{"sv":"CJS=","ad":"ENq0D2O5YJY2YJO2CQG0EG==","od":"YWOnCQDtDNK5YWS3ZNVwCq==","ov":"CzO=","ud":"ENq0D2O5YJY2YJO2CQG0EG=="},"ciphertype":5,"version":"1.2.0","appname":"com.jingdong.app.mall"};Mozilla/5.0 (Linux; Android 12; M2102K2C Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/97.0.4692.98 Mobile Safari/537.36'
+        const header = {
+            'User-Agent': ua
         }
+        const s = await api({
+            url: `http://api.momoe.ml/api/genToken`, headers: header, verify: false
+        }).json();
+
         const body = await api({
             method: 'POST',
-            url: `https://api.m.jd.com/client.action?functionId=genToken&clientVersion=${clientVersion}&client=${client}&uuid=${uuid}&st=${st}&sign=${sign}&sv=${sv}`,
-            body: 'body=%7B%22action%22%3A%22to%22%2C%22to%22%3A%22https%253A%252F%252Fplogin.m.jd.com%252Fcgi-bin%252Fm%252Fthirdapp_auth_page%253Ftoken%253DAAEAIEijIw6wxF2s3bNKF0bmGsI8xfw6hkQT6Ui2QVP7z1Xg%2526client_type%253Dandroid%2526appid%253D879%2526appup_type%253D1%22%7D&',
+            url: 'https://api.m.jd.com/client.action',
+            body: 'body=%7B%22to%22%3A%22https%253a%252f%252fplogin.m.jd.com%252fjd-mlogin%252fstatic%252fhtml%252fappjmp_blank.html%22%7D&',
+            searchParams: s,
             headers: {
-                Cookie: this.jdwsck,
-                'User-Agent': 'okhttp/3.12.1;jdmall;android;version/10.1.2;build/89743;screen/1440x3007;os/11;network/wifi;',
+                'Cookie': this.jdwsck,
+                'User-Agent': ua,
                 'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'Accept-Charset': 'UTF-8',
                 'Accept-Encoding': 'br,gzip,deflate'
             },
+            verify: false
         }).json();
+        console.log("body:" + JSON.stringify(body))
         const response = await got1({
             followRedirect: false,
             url: `https://un.m.jd.com/cgi-bin/app/appjmp?tokenKey=${body['tokenKey']}&to=https://plogin.m.jd.com/cgi-bin/m/thirdapp_auth_page?token=AAEAIEijIw6wxF2s3bNKF0bmGsI8xfw6hkQT6Ui2QVP7z1Xg&client_type=android&appid=879&appup_type=1`,
@@ -588,6 +562,7 @@ module.exports = class User {
                 'Accept-Encoding': 'br,gzip,deflate'
             },
         });
+        //console.log("res:" + JSON.stringify(response.headers))
         const headers = response.headers;
         if (headers['set-cookie']) {
             const pt_key = headers['set-cookie'][2];
@@ -600,6 +575,8 @@ module.exports = class User {
             const result = await this.CKLogin();
             this.eid = result.eid
             result.errcode = 0;
+            // console.log("pin="+this.pt_pin+"\n")
+            // console.log("key="+this.pt_key+"\n")
             return result;
         }
     }

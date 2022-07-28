@@ -16,7 +16,7 @@
       <div class="card-footer"></div>
     </div>
 
-    <div v-if="showQR" class="card">
+    <!-- <div v-if="showQR" class="card">
       <div class="card-header">
         <div class="flex items-center justify-between">
           <p class="text-2xl font-bold">扫码登录</p>
@@ -28,17 +28,13 @@
       </div>
       <div class="card-body text-center">
         <div v-if="!qrCodeVisibility" class="flex flex-col w-48 m-auto mt-4">
-          <el-button type="primary" round @click="showQrcode"
-            >扫描二维码登录</el-button
-          >
-          <el-button class="mt-4 ml-0" type="primary" round @click="jumpLogin"
-            >跳转到京东 App 登录</el-button
-          >
+          <el-button type="primary" round @click="showQrcode">扫描二维码登录</el-button>
+          <el-button class="mt-4 ml-0" type="primary" round @click="jumpLogin">跳转到京东 App 登录</el-button>
         </div>
         <img v-else :src="QRCode" :width="256" class="m-auto" />
       </div>
       <div class="card-footer"></div>
-    </div>
+    </div> -->
 
     <div v-if="showWSCK" class="card">
       <div class="card-header">
@@ -49,13 +45,14 @@
         <div class="card-body text-base leading-6">
           <b>wskey有效期长达一年，请联系管理员确认使用（删不掉，慎用）</b>
           <p>用户须手动提取pin和wskey，格式如："pt_pin=xxxxxx;wskey=xxxxxxxxxx;"。</p>
-          <p class="card-subtitle">——IOS用户手机抓包APP&emsp;<a style="" href="https://apps.apple.com/cn/app/stream/id1312141691" target="_blank" id="downiOSApp">点击跳转安装</a> </p>
+          <p class="card-subtitle">——IOS用户手机抓包APP&emsp;<a style="" href="https://apps.apple.com/cn/app/stream/id1312141691" target="_blank"
+              id="downiOSApp">点击跳转安装</a> </p>
           <p class="card-subtitle">——在api.m.jd.com域名下找POST请求大概率能找到wskey。</p>
           <p class="card-subtitle">wskey在录入后立马上线，系统会在指定时间检查wskey，有效则自动转换出cookie登录</p>
           <p class="card-subtitle">cookie失效后，也会在系统设定的指定时间内自动转换出新的cookie，实现一次录入长期有效</p>
           <b>wskey会随着京东app的退出登录和更改密码而失效，清楚app数据或者卸载软件不会影响。</b>
         </div>
-        <span class="card-subtitle"> 请在下方输入您的 WSCK  </span>
+        <span class="card-subtitle"> 请在下方输入您的 WSCK </span>
       </div>
       <div class="card-body text-center">
         <el-input v-model="jdwsck" placeholder="pin=xxxxxx;wskey=xxxxxxxxxx;" size="small" clearable class="my-4 w-full" />
@@ -79,7 +76,7 @@
         <span class="card-subtitle"> 请在下方输入您的 cookie 登录。 </span>
       </div>
       <div class="card-body text-center">
-        <el-input v-model="cookie" placeholder="...pt_pin=xxxxxx;pt_token=xxxxxxxxxx;..." size="small" clearable class="my-4 w-full"/>
+        <el-input v-model="cookie" placeholder="...pt_pin=xxxxxx;pt_token=xxxxxxxxxx;..." size="small" clearable class="my-4 w-full" />
         <el-button type="primary" size="small" round @click="CKLogin">登录</el-button>
       </div>
       <div class="card-footer"></div>
@@ -93,7 +90,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   getInfoAPI,
-  getQrcodeAPI,
+  // getQrcodeAPI,
   CKLoginAPI,
   checkLoginAPI,
   WSCKLoginAPI,
@@ -108,8 +105,8 @@ export default {
       marginCount: 0,
       allowAdd: true,
       cookie: '',
-      QRCode: undefined,
-      qrCodeVisibility: false,
+      // QRCode: undefined,
+      // qrCodeVisibility: false,
       token: undefined,
       okl_token: undefined,
       cookies: undefined,
@@ -119,9 +116,9 @@ export default {
       marginWSCKCount: 0,
       allowWSCKAdd: true,
       jdwsck: undefined,
-      showQR:false,
-      showWSCK:false,
-      showCK:true,
+      // showQR: false,
+      showWSCK: false,
+      showCK: true,
 
     })
 
@@ -131,40 +128,40 @@ export default {
       data.allowAdd = info.allowAdd
       data.marginWSCKCount = info.marginWSCKCount
       data.allowWSCKAdd = info.allowWSCKAdd
-      data.showQR = info.showQR
+      // data.showQR = info.showQR
       data.showWSCK = info.showWSCK
       data.showCK = info.showCK
-
+      console.log("返回环境变量结果：" + JSON.stringify(data))
     }
 
-    const getQrcode = async () => {
-      // 增加扫码是否禁用判断
-      if (this.showQR) {
-        try {
-          const body = await getQrcodeAPI()
-          data.token = body.data.token
-          data.okl_token = body.data.okl_token
-          data.cookies = body.data.cookies
-          data.QRCode = body.data.QRCode
-          if (data.QRCode) {
-            // data.qrCodeVisibility = true
-            data.waitLogin = true
-            clearInterval(data.timer) // 清除定时器
-            data.timer = setInterval(ckeckLogin, 3000) // 设置定时器
-          }
-        } catch (e) {
-          console.error(e)
-          ElMessage.error('生成二维码失败！请重试或放弃')
-        }
-      } else {
-        ElMessage.warning('扫码已禁用请手动抓包')
-      }
+    // const getQrcode = async () => {
+    //   // 增加扫码是否禁用判断
+    //   if (this.showQR) {
+    //     try {
+    //       const body = await getQrcodeAPI()
+    //       data.token = body.data.token
+    //       data.okl_token = body.data.okl_token
+    //       data.cookies = body.data.cookies
+    //       data.QRCode = body.data.QRCode
+    //       if (data.QRCode) {
+    //         // data.qrCodeVisibility = true
+    //         data.waitLogin = true
+    //         clearInterval(data.timer) // 清除定时器
+    //         data.timer = setInterval(ckeckLogin, 3000) // 设置定时器
+    //       }
+    //     } catch (e) {
+    //       console.error(e)
+    //       ElMessage.error('生成二维码失败！请重试或放弃')
+    //     }
+    //   } else {
+    //     ElMessage.warning('扫码已禁用请手动抓包')
+    //   }
 
-    }
+    // }
 
-    const showQrcode = async () => {
-      data.qrCodeVisibility = true
-    }
+    // const showQrcode = async () => {
+    //   data.qrCodeVisibility = true
+    // }
 
     const jumpLogin = async () => {
       const href = `openapp.jdmobile://virtual/ad?params={"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=${data.token}","authlogin_returnurl":"weixin://","browserlogin_fromurl":"${window.location.host}"}`
@@ -230,9 +227,12 @@ export default {
         data.jdwsck.match(/pin=(.*?);/) &&
         data.jdwsck.match(/pin=(.*?);/)[1]
       if (wskey && pin) {
+        console.log("请求变量wskey：" + wskey + "  pin:" + pin)
         const body = await WSCKLoginAPI({ wskey: wskey, pin: pin })
+        console.log("请求结果：" + JSON.stringify(body))
         if (body.data.wseid) {
           localStorage.setItem('wseid', body.data.wseid)
+          localStorage.setItem('eid', body.data.eid)
           ElMessage.success(body.message)
           router.push('/')
         } else {
@@ -245,14 +245,14 @@ export default {
 
     onMounted(() => {
       getInfo()
-      getQrcode()
+      // getQrcode()
     })
 
     return {
       ...toRefs(data),
       getInfo,
-      getQrcode,
-      showQrcode,
+      // getQrcode,
+      // showQrcode,
       ckeckLogin,
       jumpLogin,
       CKLogin,
@@ -264,15 +264,15 @@ export default {
 
 <style scoped>
 /*没被访问过之前*/
- a:link{
-            color: #B321FF;
-        }
-        /*默认*/
- a{
-            color: #EECDFF;
-        }
-        /*鼠标掠过*/
- a:hover{
-            color: red;
-        }
+a:link {
+  color: #b321ff;
+}
+/*默认*/
+a {
+  color: #eecdff;
+}
+/*鼠标掠过*/
+a:hover {
+  color: red;
+}
 </style>

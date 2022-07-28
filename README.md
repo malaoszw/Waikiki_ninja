@@ -17,7 +17,7 @@
 ## 新
 新增启用/禁用CK功能 修复更新时间错误 remark输入框同步当前昵称
 
-新增支持青龙面板2.12+/删除CK后自动退出登录,一般我只用ck所以wskey还没测试过
+新增支持青龙面板2.12+/删除CK后自动退出登录,修复WSCK录入功能
 
 当前：增加备用接口（针对某些半黑号）
 
@@ -28,8 +28,6 @@
 Ninja 仅供学习参考使用，请于下载后的 24 小时内删除，本人不对使用过程中出现的任何问题负责，包括但不限于 `数据丢失` `数据泄露`。
 
 Ninja 仅支持青龙面板2.12.2+
-
-[TG 频道](https://t.me/joinchat/sHKuteb_lfdjNmZl)
 
 ## 特性
 
@@ -67,23 +65,23 @@ Ninja 仅支持青龙面板2.12.2+
          - ENABLE_WEB_PANEL=true
    volumes:
          - ./qinglong/data:/ql/data
-         - ./qinglong/ninja:/ql/ninja
+         - ./qinglong/ninja:/ql/data/ninja
    ```
    
    例（docker-run）：
    
    ```diff
    docker run -dit \
-     -v $PWD/ql/config:/ql/config \
-     -v $PWD/ql/log:/ql/log \
-     -v $PWD/ql/db:/ql/db \
-     -v $PWD/ql/repo:/ql/repo \
-     -v $PWD/ql/raw:/ql/raw \
-     -v $PWD/ql/scripts:/ql/scripts \
-     -v $PWD/ql/jbot:/ql/jbot \
-   + -v $PWD/ql/ninja:/ql/ninja \
+     -v $PWD/ql/data/config:/ql/data/config \
+     -v $PWD/ql/data/log:/ql/data/log \
+     -v $PWD/ql/data/db:/ql/data/db \
+     -v $PWD/ql/data/repo:/ql/data/repo \
+     -v $PWD/ql/data/raw:/ql/data/raw \
+     -v $PWD/ql/data/scripts:/ql/data/scripts \
+     -v $PWD/ql/data/jbot:/ql/data/jbot \
+     -v $PWD/ql/data/ninja:/ql/data/ninja \
      -p 5700:5700 \
-   + -p 5701:5701 \
+     -p 5701:5701 \
      --name qinglong \
      --hostname qinglong \
      --restart unless-stopped \
@@ -95,8 +93,8 @@ Ninja 仅支持青龙面板2.12.2+
    **进容器内执行以下命令**
 
    ```bash
-   git clone https://git.metauniverse-cn.com//https://github.com/showmexlq/Waikiki_ninja /ql/ninja
-   cd /ql/ninja/backend
+   git clone https://github.com/malaoszw/Waikiki_ninja.git /ql/data/ninja
+   cd /ql/data/ninja/backend
    pnpm install
    cp .env.example .env # 如有需要, 修改.env
    pm2 start
@@ -106,7 +104,7 @@ Ninja 仅支持青龙面板2.12.2+
 3. 将以下内容粘贴到 `extra.sh`（重启后自动更新并启动 Ninja）
 
    ```bash
-   cd /ql/ninja/backend
+   cd /ql/data/ninja/backend
    git checkout .
    git pull
    pnpm install
@@ -121,7 +119,7 @@ Ninja 仅支持青龙面板2.12.2+
 使用此种方法无法跟随青龙一起启动，**无法发送扫码通知**，请知悉。
 
 ```bash
-git clone https://github.com/Waikkii/waikiki_ninja.git
+git clone https://github.com/malaoszw/Waikiki_ninja.git
 cd ninja/backend
 pnpm install
 # 复制 sendNotify.js 到容器内 data/scripts 目录，`qinglong` 为容器名
@@ -159,7 +157,7 @@ QL_URL=http://localhost:5700
 配置方式：
 
 ```bash
-cd /ql/ninja/backend
+cd /ql/data/ninja/backend
 cp .env.example .env
 vi .env
 pm2 start
@@ -190,7 +188,7 @@ pm2 start
 ## 如何更新Ninja
 
 ```bash
-cd /ql/ninja
+cd /ql/data/ninja
 git checkout .
 git pull
 cd backend
@@ -200,7 +198,7 @@ pm2 start
 ## 如何删除Ninja
 
 ```bash
-cd /ql/ninja
+cd /ql/data/ninja
 pm2 delete ninja
 rm -rf *
 rm -r ./.*
